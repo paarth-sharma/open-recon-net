@@ -9,17 +9,27 @@ def setup_qos():
     info('*** Setting up QoS rules \n')
     os.system("sudo ovs-vsctl --all destroy qos")
     os.system("sudo ovs-vsctl --all destroy queue")
+
+    def setup_qos():
+    """ Configure QoS on the switch """
+    info('*** Setting up QoS rules \n')
+    os.system("sudo ovs-vsctl --all destroy qos")
+    os.system("sudo ovs-vsctl --all destroy queue")
     
-    # Create QoS rules and queues
-    os.system("sudo ovs-vsctl set port s1-eth3 qos=@newqos -- "
-              "--id=@newqos create qos type=linux-htb queues=0=@q0 "
-              "--id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=30000000")
-    os.system("sudo ovs-vsctl set port s1-eth2 qos=@newqos2 -- "
-              "--id=@newqos2 create qos type=linux-htb queues=0=@q1 "
-              "--id=@q1 create queue other-config:min-rate=50000000 other-config:max-rate=150000000")
-    os.system("sudo ovs-vsctl set port s1-eth4 qos=@newqos3 -- "
-              "--id=@newqos3 create qos type=linux-htb queues=0=@q2 "
-              "--id=@q2 create queue other-config:min-rate=50000000 other-config:max-rate=200000000")
+    # QoS & Queue for H1 -> H3 (30 Mb/s)
+    os.system("sudo ovs-vsctl -- --id=@q0 create queue other-config:max-rate=30000000 "
+              "-- --id=@newqos create qos type=linux-htb queues=0=@q0 "
+              "-- set port s1-eth3 qos=@newqos")
+
+    # QoS & Queue for H1 -> H2 (150 Mb/s)
+    os.system("sudo ovs-vsctl -- --id=@q1 create queue other-config:max-rate=150000000 "
+              "-- --id=@newqos2 create qos type=linux-htb queues=0=@q1 "
+              "-- set port s1-eth2 qos=@newqos2")
+
+    # QoS & Queue for H2 -> H4 (200 Mb/s)
+    os.system("sudo ovs-vsctl -- --id=@q2 create queue other-config:max-rate=200000000 "
+              "-- --id=@newqos3 create qos type=linux-htb queues=0=@q2 "
+              "-- set port s1-eth4 qos=@newqos3")
 
 def topology():
     net = Mininet(controller=Controller, switch=OVSSwitch)
