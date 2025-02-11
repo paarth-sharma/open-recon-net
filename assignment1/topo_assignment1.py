@@ -10,7 +10,7 @@ def setup_qos():
     os.system("sudo ovs-vsctl --all destroy qos")
     os.system("sudo ovs-vsctl --all destroy queue")
 
-    def setup_qos():
+def setup_qos():
     """ Configure QoS on the switch """
     info('*** Setting up QoS rules \n')
     os.system("sudo ovs-vsctl --all destroy qos")
