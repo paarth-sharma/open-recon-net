@@ -13,11 +13,11 @@ def assignmentTopo():
     ############ CODE SHOULD ONLY BE ADDED BELOW  #################################
     info( '*** Adding controller\n' )
     # =>add the controller here
-    net.addController('c0')
+    net.addController('c0', controller=RemoteController, ip='127.0.0.1')
 
     info( '*** Adding hosts\n' )
-    h1 = net.addHost( 'h1', ip='10.0.0.1', mac='00:00:00:00:00:01' )
     # =>h1 is already added, now add the other hosts here
+    h1 = net.addHost( 'h1', ip='10.0.0.1', mac='00:00:00:00:00:01' )
     h2 = net.addHost( 'h2', ip='10.0.0.2', mac='00:00:00:00:00:02' )
     h3 = net.addHost( 'h3', ip='10.0.0.3', mac='00:00:00:00:00:03' )
     h4 = net.addHost( 'h4', ip='10.0.0.4', mac='00:00:00:00:00:04' )
@@ -40,13 +40,13 @@ def assignmentTopo():
 
    # Configure QoS queues
     info('*** Configuring QoS queues\n')
-    # Port 2 (H2): 2 queues for 150Mbps and other traffic
+    #Port s1-eth2 queue0 = "uncapped", queue1 = "150 Mb/s"
     os.system('sudo ovs-vsctl set port s1-eth2 qos=@newqos -- --id=@newqos create qos type=linux-htb queues=0=@q0,1=@q1 -- --id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=150000000 -- --id=@q1 create queue other-config:min-rate=50000000 other-config:max-rate=150000000')
 
-    # Port 3 (H3): 1 queue for 30Mbps limit
+    #Port s1-eth3 queue0 for 30Mbps limit
     os.system('sudo ovs-vsctl set port s1-eth3 qos=@newqos -- --id=@newqos create qos type=linux-htb queues=0=@q0 -- --id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=30000000')
 
-    # Port 4 (H4): 2 queues for 200Mbps cap and others
+    #Port s1-eth4 queue0 = "uncapped", queue1 = "200 Mb/s
     os.system('sudo ovs-vsctl set port s1-eth4 qos=@newqos -- --id=@newqos create qos type=linux-htb queues=0=@q0,1=@q1 -- --id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=1000000000 -- --id=@q1 create queue other-config:min-rate=50000000 other-config:max-rate=200000000')
 
     ########### THIS IS THE END OF THE AREA WHERE YOU NEED TO ADD CODE ##################################
