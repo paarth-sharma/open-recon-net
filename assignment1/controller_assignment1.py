@@ -136,7 +136,7 @@ def _handle_PacketIn ( event): # Ths is the main class where your code goes, it 
                     msg_flowmod.actions.append(of.ofp_action_output(port=of.OFPP_FLOOD))
 
             #flow table is now to be sent to packet
-            event.connection.send(msg)
+            event.connection.send(msg_flowmod)
 
             #we also send a packet_out() call to send on the very first packet too
             msg_fp = of.ofp_packet_out()
