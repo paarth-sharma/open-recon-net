@@ -80,52 +80,37 @@ def _handle_PacketIn ( event): # Ths is the main class where your code goes, it 
                 # => start creating a new flow rule for mathcing the ethernet source and destination
                 
                 # Create flow mod
-                fm = of.ofp_flow_mod()
-                fm.match = of.ofp_match.from_packet(eth_packet, inport)
-                fm.hard_timeout = 40
+                
+                msg = of.ofp_flow_mod()
+                msg.match.dl_dst = eth_packet.dst
+                msg.match.dl_src = eth_packet.src
+                msg.hard_timeout = 40
+                
+                if 'TCPPort' in rule and rule['TCPPort']:
+                    msg.match.nw_proto = ip.TCP_PROTOCOL
+                    msg.match.tp_dst = rule['TCPPort']
+                
+                if 'queue' in rule and rule['queue']:
+                    msg.actions.append(of.ofp_action_enqueue(port=dst_port, queue_id=rule['queue']))
+                else:
+                    msg.actions.append(of.ofp_action_output(port=dst_port))
+                
+                event.connection.send(msg)
+                
+                msg_packet = of.ofp_packet_out()
+                msg_packet.data = event.ofp
+                msg_packet.actions.append(of.ofp_action_output(port=dst_port))
+                event.connection.send(msg_packet)
+                
+                break
+
                 #if ...
                 # => now check if the rule contains also TCP port info. If not install the flow without any port restriction
                     # => also remember to check if this is a drop rule. The drop function can be added by not sending any action to the flow rule
                     # => also remember that if there is a QoS requirement, then you need to use the of.ofp_action_enqueue() function, instead of the of.ofp_action_output
                     # => and remember that in addition to creating a fow rule, you should also send out the message that came from the Switch
                     # => at the end remember to send out both flow rule and packet
-                
-                # TCP port handling
-                if rule['TCPPort'] != -1:
-                    if not isinstance(eth_packet.next, pkt.ipv4):
-                        continue
-                    if not isinstance(eth_packet.next.next, pkt.tcp):
-                        continue
-                    if eth_packet.next.next.dstport != rule['TCPPort']:
-                        continue
-                    
-                    fm.match.dl_type = eth.IP_TYPE
-                    fm.match.nw_proto = pkt.ipv4.TCP_PROTOCOL
-                    fm.match.tp_dst = rule['TCPPort']
 
-                    # Action handling
-                if rule['drop']:
-                    fm.actions = []
-                else:
-                    out_port = table.get((dpid, eth_packet.dst))
-                    if out_port is None: continue
-                    
-                    if rule['queue'] != -1:
-                        fm.actions.append(of.ofp_action_enqueue(
-                            port=out_port, queue_id=rule['queue']))
-                    else:
-                        fm.actions.append(of.ofp_action_output(port=out_port))
-
-                # Install rule
-                event.connection.send(fm)
-                
-                # Forward packet if not drop
-                if not rule['drop']:
-                    msg = of.ofp_packet_out(data=event.ofp)
-                    msg.actions = fm.actions.copy()
-                    event.connection.send(msg)
-
-                break
                 #else ...
                 # => otherwise:
                 # => if the packet is an IP packet, its protocol is TCP, and the TCP port of the packet matches the TCP rule above
