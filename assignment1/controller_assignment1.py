@@ -117,38 +117,38 @@ def _handle_PacketIn ( event): # Ths is the main class where your code goes, it 
                     msg_flowmod.match.tp_dst = tcp_port
                 else:
                     continue #even if not in rule
-        elif tcp_port:
-            #for rules that require a specific tcp port
-            #but it doesnt apply to current packet
-            continue
+            elif tcp_port:
+                #for rules that require a specific tcp port
+                #but it doesnt apply to current packet
+                continue
 
-        # we check for firewalls, the if drop is true
-        if rule['drop']:
-            #dont check anything, stop packets from going to and fro
-            pass
-        else:
-            #forward packet to destination port
-            q_id = rule.get('queue', 0)
-            if dst_port is not None:
-                msg_flowmod.actions.append(of.ofp_action_enqueue(port=dst_port, queue_id=q_id))
+            # we check for firewalls, the if drop is true
+            if rule['drop']:
+                #dont check anything, stop packets from going to and fro
+                pass
             else:
-                #if destination is unknown we can flood all ports
-                msg_flowmod.actions.append(of.ofp_action_output(port=of.OFPP_FLOOD))
+                #forward packet to destination port
+                q_id = rule.get('queue', 0)
+                if dst_port is not None:
+                    msg_flowmod.actions.append(of.ofp_action_enqueue(port=dst_port, queue_id=q_id))
+                else:
+                    #if destination is unknown we can flood all ports
+                    msg_flowmod.actions.append(of.ofp_action_output(port=of.OFPP_FLOOD))
 
-        #flow table is now to be sent to packet
-        event.connection.send(msg)
+            #flow table is now to be sent to packet
+            event.connection.send(msg)
 
-        #we also send a packet_out() call to send on the very first packet too
-        msg_fp = of.ofp_packet_out()
-        msg_fp.data = event.ofp
-        if not rule['drop']:
-            if dst_port is not None:
-                msg_fp.actions.append(of.ofp_action_enqueue(port=dst_port, queue_id=q_id))
-            else:
-                msg_fp.actions.append(of.ofp_action_output(port=of.OFPP_FLOOD))
+            #we also send a packet_out() call to send on the very first packet too
+            msg_fp = of.ofp_packet_out()
+            msg_fp.data = event.ofp
+            if not rule['drop']:
+                if dst_port is not None:
+                    msg_fp.actions.append(of.ofp_action_enqueue(port=dst_port, queue_id=q_id))
+                else:
+                    msg_fp.actions.append(of.ofp_action_output(port=of.OFPP_FLOOD))
 
-            event.connection.send(msg_fp)
-        break
+                event.connection.send(msg_fp)
+            break
 
     else:
         #flood to learn as fall-back, so we're not stuck in the loop

@@ -13,7 +13,7 @@ def assignmentTopo():
     ############ CODE SHOULD ONLY BE ADDED BELOW  #################################
     info( '*** Adding controller\n' )
     # =>add the controller here
-    net.addController('c0', controller=RemoteController, ip='127.0.0.1')
+    net.addController('c0', controller=RemoteController, ip='127.0.0.1', port=6633) #defaults
 
     info( '*** Adding hosts\n' )
     # =>h1 is already added, now add the other hosts here
@@ -36,19 +36,28 @@ def assignmentTopo():
 
     info( '*** Starting network\n')
     net.start()
-    h1, h2, h3, h4 = net.hosts[0],net.hosts[1],net.hosts[2],net.hosts[3]
+    h1, h2, h3, h4 = net.hosts[0], net.hosts[1], net.hosts[2], net.hosts[3]
 
-   # Configure QoS queues
+   # Configure QoS queues, uncappped is some large arbritrary large number 
     info('*** Configuring QoS queues\n')
-    #Port s1-eth2 queue0 = "uncapped", queue1 = "150 Mb/s"
-    os.system('sudo ovs-vsctl set port s1-eth2 qos=@newqos -- --id=@newqos create qos type=linux-htb queues=0=@q0,1=@q1 -- --id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=150000000 -- --id=@q1 create queue other-config:min-rate=50000000 other-config:max-rate=150000000')
-
-    #Port s1-eth3 queue0 for 30Mbps limit
-    os.system('sudo ovs-vsctl set port s1-eth3 qos=@newqos -- --id=@newqos create qos type=linux-htb queues=0=@q0 -- --id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=30000000')
-
-    #Port s1-eth4 queue0 = "uncapped", queue1 = "200 Mb/s
-    os.system('sudo ovs-vsctl set port s1-eth4 qos=@newqos -- --id=@newqos create qos type=linux-htb queues=0=@q0,1=@q1 -- --id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=1000000000 -- --id=@q1 create queue other-config:min-rate=50000000 other-config:max-rate=200000000')
-
+    
+    #s1-eth2 queue0 = "uncapped", queue1 = "150 Mb/s"
+    os.system('sudo ovs-vsctl set port s1-eth2 qos=@newqos -- \
+      --id=@newqos create qos type=linux-htb queues=0=@q0,1=@q1 -- \
+      --id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=1000000000000 -- \
+      --id=@q1 create queue other-config:min-rate=50000000 other-config:max-rate=150000000')
+    
+    #s1-eth3 queue0 for 30Mbps limit
+    os.system('sudo ovs-vsctl set port s1-eth3 qos=@newqos -- \
+      --id=@newqos create qos type=linux-htb queues=0=@q0 -- \
+      --id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=30000000')
+    
+    #s1-eth4 queue0 = "uncapped", queue1 = "200 Mb/s
+    os.system('sudo ovs-vsctl set port s1-eth4 qos=@newqos -- \
+      --id=@newqos create qos type=linux-htb queues=0=@q0,1=@q1 -- \
+      --id=@q0 create queue other-config:min-rate=20000000 other-config:max-rate=1000000000000 -- \
+      --id=@q1 create queue other-config:min-rate=50000000 other-config:max-rate=200000000')
+    
     ########### THIS IS THE END OF THE AREA WHERE YOU NEED TO ADD CODE ##################################
     #####################################################################################################
 
