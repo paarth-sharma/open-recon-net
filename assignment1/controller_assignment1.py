@@ -52,10 +52,10 @@ def _handle_ConnectionUp ( event):
 
 def _handle_PacketIn ( event): # Ths is the main class where your code goes, it will be called every time a packet is sent from the switch to the controller
 
-    dpid = event.connection.dpid
-    sw=dpidToStr(dpid)
-    inport = event.port     # this records the port from which the packet entered the switch
-    eth_packet = event.parsed # this parses  the incoming message as an Ethernet packet
+    dpid = event.connection.dpid #defines the switch from which the packet came
+    sw=dpidToStr(dpid)           #convert to readable string
+    inport = event.port          #shows input port from which the packet entered the switch
+    eth_packet = event.parsed    #this parses  the incoming message as an Ethernet packet
     log.debug("Event: switch %s port %s packet %s" % (sw, inport, eth_packet)) # this is the way you can add debugging information to your text
 
     table[(dpid,eth_packet.src)] = event.port   # this associates the given port with the sending node using the source address of the incoming packet
