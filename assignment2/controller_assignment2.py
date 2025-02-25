@@ -25,13 +25,9 @@ table = {}
 rules = [
   # 1) H1->H3 on TCP port 40 => shaped at queue=0 (30Mb/s) 
   {'EthSrc':'00:00:00:00:00:01','EthDst':'00:00:00:00:00:03','TCPPort':40,'queue':0,'drop':False},
-  # 1b) H1->H3 catch-all => uncapped (i.e. queue=0 but large rate for any non-port-40 traffic)
-  {'EthSrc':'00:00:00:00:00:01','EthDst':'00:00:00:00:00:03','queue':0,'drop':False},
 
   # 2) H1->H2 on TCP port 60 => shaped at queue=1 (150Mb/s)
   {'EthSrc':'00:00:00:00:00:01','EthDst':'00:00:00:00:00:02','TCPPort':60,'queue':1,'drop':False},
-  # 2b) H1->H2 catch-all => uncapped
-  {'EthSrc':'00:00:00:00:00:01','EthDst':'00:00:00:00:00:02','queue':0,'drop':False},
 
   # 3) H1->H4 => uncapped
   {'EthSrc':'00:00:00:00:00:01','EthDst':'00:00:00:00:00:04','queue':0,'drop':False},
