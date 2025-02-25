@@ -28,12 +28,13 @@ def assignmentTopo():
     net.addLink(h1, s1)
     # h2 -> s1-eth2
     net.addLink(h2, s1)
-    # s1 <-> s2 (assume s1-eth3 and s2-eth3)
-    net.addLink(s1, s2)
     # h3 -> s2-eth1
     net.addLink(h3, s2)
     # h4 -> s2-eth2
     net.addLink(h4, s2)
+
+    # s1 <-> s2 (assume s1-eth3 and s2-eth3)
+    net.addLink(s1, s2)
 
     info('*** Starting network\n')
     net.start()
